@@ -1,0 +1,44 @@
+# Build
+/target/
+**/*.rs.bk
+rustc-ice-*.txt
+
+# Lockfile — library crate (bins/apps often commit; libs typically do not)
+Cargo.lock
+
+# Docs / site outputs (if generated locally)
+site/
+book/book/
+/doc/
+/docs/book/
+
+# Coverage / profiling
+coverage/
+lcov.info
+*.prof
+*.profraw
+
+# Logs & temp
+*.log
+.tmp/
+tmp/
+.system_generated/
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment / secrets (never commit tokens or API keys)
+.env
+.env.*
+.env.local
+!.env.example
+*.pem
+*.key
+*HERMERS_API_KEY*
+*CARGO_REGISTRY_TOKEN*

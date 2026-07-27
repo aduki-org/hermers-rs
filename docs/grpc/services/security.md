@@ -1,0 +1,77 @@
+# Security (`client.security`)
+
+Wraps `hermes.security.SecurityService` — MTA-STS, TLSA, BIMI, and aggregate reports for the authenticated tenant.
+
+```rust
+let status = client.security.status().await?;
+```
+
+## Methods
+
+| Method | Signature | RPC | Returns |
+| --- | --- | --- | --- |
+| `status` | `() → Result<StatusResp>` | `Status` | Full security snapshot |
+
+No request fields (empty `StatusReq`).
+
+## Return type: `StatusResp`
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `mtasts` | `MtastsEntry[]` | MTA-STS policies |
+| `tlsa` | `TlsaEntry[]` | DANE TLSA records |
+| `bimi` | `BimiEntry[]` | BIMI records |
+| `reports` | `ReportEntry[]` | Received reports |
+
+### `MtastsEntry` (proto / ts-proto)
+
+| Field | Type |
+| --- | --- |
+| `domain` | `string` |
+| `policyJson` | `string` — policy document as JSON **string** |
+| `expires` | `string` |
+
+### `TlsaEntry`
+
+| Field | Type |
+| --- | --- |
+| `host` | `string` |
+| `port` | `number` |
+| `recordsJson` | `string` |
+| `expires` | `string` |
+
+REST `/tenant/security` uses object fields `policy` / `records` instead of these string fields — see [Tenant](../../rest/services/tenant.md).
+
+### `BimiEntry`
+
+| Field | Type |
+| --- | --- |
+| `domain` | `string` |
+| `location` | `string?` |
+| `vmc` | `string?` |
+| `expires` | `string` |
+
+### `ReportEntry`
+
+| Field | Type |
+| --- | --- |
+| `hex` | `string` |
+| `kind` | `string` |
+| `domain` | `string` |
+| `period` | `string` |
+| `received` | `string` |
+
+### Example shape
+
+```json
+{
+  mtasts: [{ domain: 'example.com', policyJson: '{…}', expires: '…' }],
+  tlsa: [{ host: 'mail.example.com', port: 25, recordsJson: '[…]', expires: '…' }],
+  bimi: [{ domain: 'example.com', location: 'https://…', vmc: undefined, expires: '…' }],
+  reports: [{ hex: 'R0X…', kind: 'dmarc', domain: 'example.com', period: '2026-07', received: '…' }],
+}
+```
+
+## Errors
+
+`PERMISSION_DENIED` if the key lacks security read scope. Throws `HermesGrpcError`.

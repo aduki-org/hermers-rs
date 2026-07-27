@@ -1,0 +1,150 @@
+# Mail (`hermes.mail`)
+
+Messages and mailboxes under `/user/mail` and `/user/mailbox`.
+
+```rust
+use hermers::types::Query;
+
+let page = hermes.mail.inbox(Some(Query { limit: Some(50), ..Default::default() })).await?;
+// page.items[0].internaldate — not `.date`
+let boxes = hermes.mail.list_mailboxes(None).await?;
+```
+
+## Message list endpoints
+
+All return `Page<Messages>`.
+
+| SDK | HTTP |
+| --- | --- |
+| `inbox` / `unread` / `flagged` / `attachments` | `GET /user/mail/inbox[…]` |
+| `by_sender(sender)` | `GET /user/mail/inbox/sender/{sender}` |
+| `sent` / `by_recipient` | `GET /user/mail/sent[…]` |
+| `drafts` / `trash` / `starred` / `spam` / `scored` | `GET /user/mail/…` |
+| `folder` / `search` | `GET /user/mail/folder|search/…` |
+| `search_advanced(q, body)` | `POST /user/mail/search/{q}/advanced` |
+| `threads` | `GET /user/mail/threads` → `Page<Threads>` |
+| `thread(id)` | `GET /user/mail/thread/{thread}` → `Page<Messages>` |
+
+### `Messages` (list row)
+
+| Field | Type | Nullable |
+| --- | --- | --- |
+| `hex` | string | no |
+| `uid` | number | no |
+| `subject` | string | yes |
+| `sender` | string | yes |
+| `size` | number | no |
+| `flags` | (string\|null)[] | no |
+| `thread` | string | yes |
+| `spam` | number | yes |
+| `internaldate` | datetime | no |
+| `mailbox` | object | no → `{ "hex": string, "name": string }` |
+| `total` | number | no |
+
+```json
+{
+  "items": [
+    {
+      "hex": "M0X…",
+      "uid": 42,
+      "subject": "Hello",
+      "sender": "ada@example.com",
+      "size": 1024,
+      "flags": ["\\\\Seen"],
+      "thread": null,
+      "spam": null,
+      "internaldate": "2026-07-28T12:00:00",
+      "mailbox": { "hex": "MB0X…", "name": "INBOX" },
+      "total": 1
+    }
+  ],
+  "total": 1,
+  "next": null
+}
+```
+
+### `Threads`
+
+| Field | Type |
+| --- | --- |
+| `thread` | string |
+| `subject` | string? |
+| `count` / `unread` / `total` | number |
+| `latest` | datetime |
+| `mailbox` | `{ hex, name }` |
+
+## Send
+
+`POST /user/mail/send` — body `{ from, to, subject, text }` (`to` is a **single string**).
+
+Response: `{ "hex": "…" }`.
+
+## Flags / delete
+
+| SDK | HTTP | Returns |
+| --- | --- | --- |
+| `update_flags(hex, { add?, remove? })` | `PATCH /user/mail/{hex}/flags` | empty / `null` |
+| `remove(hex)` | `DELETE /user/mail/{hex}` | empty / `null` |
+| `clear_mailbox(mailbox)` | `DELETE /user/mail/mailbox/{mailbox}` | empty / `null` |
+
+**No `GET /user/mail/{hex}`** on the REST API — `hermers` (REST) does not expose `retrieve`. **gRPC** `MailService.GetMessage` does (`client.mail.retrieve`) and returns the proto `Message` (`date`, `from`, `to[]`, `flags: Flag[]`, `blob`, …) — not the REST list row (`internaldate`, `sender`, `mailbox: {hex,name}`).
+
+## Mailboxes
+
+### Create — `MailboxData` request
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `name` | string | **yes** | max 255 |
+| `role` | string | no | `inbox`\|`sent`\|`drafts`\|`trash`\|`junk`\|`archive`\|`flagged`\|`all`\|`important`\|`templates` |
+| `child` | string | no | |
+| `unread` | number | no | |
+| `empty` | boolean | no | |
+| `messages` | number | no | |
+| `search` | boolean | no | |
+| `uidnext` | number | no | |
+| `flags` | string[] | no | |
+| `subscribed` | boolean | no | |
+| `parent` | string | no | parent mailbox hex |
+| `quota` | number | no | |
+| `acl` | object | no | |
+| `meta` | object | no | |
+
+### Create response — `Mailbox` model
+
+| Field | Type | Nullable |
+| --- | --- | --- |
+| `id` | number | no |
+| `hex` / `tenant` / `user` / `name` / `delimiter` | string | no |
+| `flags` | (string\|null)[] | no |
+| `uidvalidity` / `uidnext` / `modseq` | number | no |
+| `meta` / `acl` | object | no |
+| `role` | string | yes (lowercase) |
+| `subscribed` | boolean | no |
+| `parent` | string | yes |
+| `quota` | number | yes |
+| `created` / `updated` | datetime | no |
+
+### List — `Mailboxes` (`Page<Mailboxes>`)
+
+| Field | Type |
+| --- | --- |
+| `hex` / `name` / `delimiter` | string |
+| `flags` | (string\|null)[] |
+| `uidvalidity` / `uidnext` / `messages` / `unread` / `total` | number |
+| `created` | datetime |
+
+No `size` on list rows.
+
+| SDK | HTTP |
+| --- | --- |
+| `create_mailbox` | `POST /user/mailbox` |
+| `list_mailboxes` / `unread_mailboxes` / `empty_mailboxes` | `GET /user/mailbox[…]` |
+| `mailbox_by_name` / `search_mailboxes` | `GET …/name|search/…` |
+| `update_mailbox` | `PATCH /user/mailbox/{hex}/basic` |
+| `rename_mailbox` | `PATCH /user/mailbox/{hex}/name` |
+| `remove_mailbox` | `DELETE /user/mailbox/{hex}` → `null` |
+
+## Errors
+
+`{ "error": "…", "message": "…" }` — see [Types](../../types/index.md).
