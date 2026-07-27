@@ -1,0 +1,45 @@
+[package]
+name = "hermers"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT"
+description = "Official Hermers SDK — REST + gRPC clients (API key auth)"
+readme = "README.md"
+keywords = ["hermes", "hermers", "sdk", "rest", "grpc"]
+categories = ["api-bindings", "network-programming"]
+repository = "https://github.com/aduki-pro/hermers"
+documentation = "https://docs.rs/hermers"
+exclude = [".env", ".env.*", "*.pem", "*.key"]
+
+[features]
+default = ["rest", "grpc"]
+# REST / JSON client (reqwest + rustls).
+rest = ["dep:reqwest"]
+# Native gRPC over TLS (tonic + prost). Heavier; disable if you only need REST.
+grpc = ["dep:tonic", "dep:prost", "dep:tonic-prost", "dep:prost-types", "dep:tokio-stream"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt", "macros", "net", "time"] }
+sha2 = "0.10"
+getrandom = "0.3"
+# REST
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"], optional = true }
+# gRPC
+tonic = { version = "0.14", default-features = false, features = ["transport", "tls-ring"], optional = true }
+prost = { version = "0.14", optional = true }
+prost-types = { version = "0.14", optional = true }
+tonic-prost = { version = "0.14", optional = true }
+tokio-stream = { version = "0.1", optional = true }
+
+[build-dependencies]
+tonic-prost-build = "0.14"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
