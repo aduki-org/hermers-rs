@@ -4,7 +4,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    let proto_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../proto");
+    // Protos are vendored under `proto/` so crates.io packages are self-contained.
+    let proto_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("proto");
     let protos = [
         "contact.proto",
         "mail.proto",

@@ -1,0 +1,26 @@
+syntax = "proto3";
+package hermes.storage;
+
+service StorageService {
+  rpc Put    (PutReq)    returns (PutResp);
+  rpc Get    (GetReq)    returns (stream Chunk);
+  rpc Remove (RemoveReq) returns (RemoveResp);
+}
+
+message BlobRef {
+  string hex     = 1;
+  string tenant  = 2;
+  string backend = 3;
+  string bucket  = 4;
+  string key     = 5;
+  int64  size    = 6;
+  bytes  hash    = 7;
+}
+
+message Chunk { bytes data = 1; }
+
+message PutReq    { string tenant = 1; string key = 2; bytes data = 3; }
+message PutResp   { BlobRef ref = 1; }
+message GetReq    { string hex = 1; }
+message RemoveReq { string hex = 1; }
+message RemoveResp {}

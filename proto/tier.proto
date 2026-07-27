@@ -1,0 +1,39 @@
+syntax = "proto3";
+package hermes.tier;
+
+service TierService {
+  rpc Resolve (ResolveReq) returns (TierInfo);
+  rpc Change  (ChangeReq)  returns (ChangeResp);
+}
+
+enum Plan {
+  FREE       = 0;
+  STARTER    = 1;
+  PRO        = 2;
+  BUSINESS   = 3;
+  ENTERPRISE = 4;
+}
+
+message Limits {
+  int64 sends_day    = 1;
+  int64 sends_month  = 2;
+  int64 mailboxes    = 3;
+  int64 domains      = 4;
+  int64 members      = 5;
+  int64 storage_mb   = 6;
+  int64 api_keys     = 7;
+  int64 webhooks     = 8;
+  bool  ml_enabled   = 9;
+}
+
+message TierInfo {
+  string tenant   = 1;
+  Plan   plan     = 2;
+  Limits limits   = 3;
+  bool   trial    = 4;
+  string trial_ends = 5;
+}
+
+message ResolveReq { string tenant = 1; }
+message ChangeReq  { string tenant = 1; Plan plan = 2; string payment_method = 3; }
+message ChangeResp { TierInfo info = 1; }

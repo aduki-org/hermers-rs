@@ -1,0 +1,65 @@
+syntax = "proto3";
+package hermes.feeds;
+
+service FeedService {
+  rpc Create (CreateReq) returns (Feed);
+  rpc List   (ListReq)   returns (ListResp);
+  rpc Get    (GetReq)    returns (Feed);
+  rpc Update (UpdateReq) returns (Feed);
+  rpc Remove (RemoveReq) returns (RemoveResp);
+  rpc Sync   (SyncReq)   returns (SyncResp);
+}
+
+message Feed {
+  string hex        = 1;
+  string tenant     = 2;
+  string user       = 3;
+  string connection = 4;   // calendar hex this feed writes into
+  string remote     = 5;   // https URL of the .ics
+  string name       = 6;
+  optional string color = 7;
+  bool   block      = 8;
+  bool   active     = 9;
+  optional string last = 10;  // ISO-8601 last sync stamp
+}
+
+message CreateReq {
+  string connection = 1;
+  string remote     = 2;
+  string name       = 3;
+  optional string color = 4;
+  bool   block      = 5;
+}
+
+message ListReq {}
+message ListResp {
+  repeated Feed items = 1;
+}
+
+message GetReq {
+  string hex = 1;
+}
+
+message UpdateReq {
+  string hex        = 1;
+  optional string color = 2;
+  optional bool   block = 3;
+  optional bool   active = 4;
+  optional string name  = 5;
+}
+
+message RemoveReq {
+  string hex = 1;
+}
+message RemoveResp {
+  bool removed = 1;
+}
+
+message SyncReq {
+  string hex = 1;
+}
+message SyncResp {
+  bool   ok       = 1;
+  uint32 inserted = 2;
+  uint32 updated  = 3;
+}

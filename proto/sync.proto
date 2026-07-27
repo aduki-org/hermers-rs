@@ -1,0 +1,21 @@
+syntax = "proto3";
+package hermes.sync;
+
+import "google/protobuf/timestamp.proto";
+
+service SyncService {
+  rpc Contacts (ContactSyncReq) returns (ContactSyncResp);
+  rpc Mailboxes(MailboxSyncReq) returns (MailboxSyncResp);
+}
+
+message ContactSyncReq  { string tenant = 1; google.protobuf.Timestamp since = 2; }
+message ContactSyncResp { repeated string changed = 1; repeated string removed = 2; string ctag = 3; }
+
+message MailboxSyncReq  { string mailbox = 1; uint32 known_uidvalidity = 2; uint64 known_modseq = 3; }
+message MailboxSyncResp {
+  repeated uint32 new_uids     = 1;
+  repeated uint32 changed_uids = 2;
+  repeated uint32 removed_uids = 3;
+  uint64 modseq                = 4;
+  uint32 uidvalidity           = 5;
+}

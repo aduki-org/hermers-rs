@@ -1,0 +1,24 @@
+syntax = "proto3";
+package hermes.usage;
+
+service Usageervice {
+  rpc Increment (IncrReq)   returns (IncrResp);
+  rpc Check     (CheckReq)  returns (CheckResp);
+  rpc Get       (GetReq)    returns (Usage);
+  rpc Reset     (ResetReq)  returns (ResetResp);
+}
+
+message Usage {
+  string tenant      = 1;
+  string metric      = 2;
+  int64  value       = 3;
+  string window      = 4;  // YYYY-MM-DD or YYYY-MM
+}
+
+message IncrReq   { string tenant = 1; string metric = 2; int64 by = 3; }
+message IncrResp  { int64 value = 1; bool over_limit = 2; }
+message CheckReq  { string tenant = 1; string metric = 2; }
+message CheckResp { int64 used = 1; int64 limit = 2; bool over = 3; }
+message GetReq    { string tenant = 1; string metric = 2; string window = 3; }
+message ResetReq  { string tenant = 1; string metric = 2; string window = 3; }
+message ResetResp {}

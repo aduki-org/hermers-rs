@@ -1,0 +1,44 @@
+syntax = "proto3";
+package hermes.spam;
+
+service SpamService {
+  rpc Classify (ClassifyReq) returns (ClassifyResp);
+  rpc Report   (ReportReq)   returns (ReportResp);
+}
+
+enum Verdict {
+  CLEAN = 0;
+  SPAM  = 1;
+  BULK  = 2;
+}
+
+message Scores {
+  float rules      = 1;
+  float bayes      = 2;
+  float ml         = 3;
+  float reputation = 4;
+  float composite  = 5;
+}
+
+message ClassifyReq {
+  string tenant    = 1;
+  string msg       = 2;   // message hex
+  bytes  raw       = 3;   // raw .eml bytes
+  string direction = 4;   // "inbound" | "outbound"
+}
+
+message ClassifyResp {
+  Verdict verdict = 1;
+  Scores  scores  = 2;
+  string  reason  = 3;
+}
+
+message ReportReq {
+  string  tenant  = 1;
+  string  msg     = 2;
+  string  user    = 3;
+  Verdict verdict = 4;
+  string  source  = 5;   // "user_report" | "dmarc_feedback" | "honeypot"
+}
+
+message ReportResp {}

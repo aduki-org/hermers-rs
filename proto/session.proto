@@ -1,0 +1,71 @@
+syntax = "proto3";
+package hermes.session;
+
+import "google/protobuf/timestamp.proto";
+
+service SessionService {
+  rpc Issue  (IssueReq)  returns (IssueResp);
+  rpc Load   (LoadReq)   returns (Session);
+  rpc Revoke (RevokeReq) returns (RevokeResp);
+  rpc Patch  (PatchReq)  returns (PatchResp);
+  rpc Login  (LoginReq)  returns (IssueResp);
+  rpc Refresh(RefreshReq) returns (IssueResp);
+  rpc List   (ListSessionsReq) returns (ListSessionsResp);
+  rpc Whoami (WhoamiReq) returns (Session);
+}
+
+message Session {
+  string   hex     = 1;
+  string   user    = 2;
+  string   tenant  = 3;
+  bool     owner   = 4;
+  repeated string scopes = 5;
+  repeated string deny   = 6;
+  string   tier    = 7;
+  string   ip      = 8;
+  string   agent   = 9;
+  google.protobuf.Timestamp created  = 10;
+  google.protobuf.Timestamp expires  = 11;
+  google.protobuf.Timestamp refreshed = 12;
+}
+
+message IssueReq  { string user = 1; string tenant = 2; string ip = 3; string agent = 4; }
+message IssueResp { string token = 1; string refresh = 2; Session session = 3; }
+message LoadReq   { string jti = 1; }
+message RevokeReq { string jti = 1; }
+message RevokeResp {}
+message PatchReq  { string user = 1; string tenant = 2; repeated string scopes = 3; repeated string deny = 4; }
+message PatchResp {}
+
+message LoginReq {
+  string email    = 1;
+  string password = 2;
+  string ip       = 3;
+  string agent    = 4;
+}
+
+message RefreshReq {
+  string token = 1;
+}
+
+message ListSessionsReq {
+  string user  = 1;
+  uint32 page  = 2;
+  uint32 limit = 3;
+  string after = 4;
+}
+
+message ListSessionsResp {
+  repeated Session items = 1;
+  int64            total = 2;
+  uint32           page  = 3;
+  uint32           pages = 4;
+}
+
+message WhoamiReq {
+  string token = 1;
+}
+
+message WhoamiResp {
+  Session session = 1;
+}

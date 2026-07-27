@@ -1,0 +1,33 @@
+syntax = "proto3";
+package hermes.contact;
+
+import "google/protobuf/timestamp.proto";
+
+service ContactService {
+  rpc List   (ListReq)   returns (ListResp);
+  rpc Get    (GetReq)    returns (Contact);
+  rpc Create (CreateReq) returns (Contact);
+  rpc Update (UpdateReq) returns (Contact);
+  rpc Remove (RemoveReq) returns (RemoveResp);
+  rpc Sync   (SyncReq)   returns (SyncResp);
+}
+
+message Contact {
+  string hex        = 1;
+  string tenant     = 2;
+  string owner      = 3;
+  string vcard      = 4;  // raw vCard 4.0 string
+  string etag       = 5;
+  google.protobuf.Timestamp created = 6;
+  google.protobuf.Timestamp updated = 7;
+}
+
+message ListReq  { string tenant = 1; string cursor = 2; uint32 limit = 3; }
+message ListResp { repeated Contact items = 1; string next = 2; }
+message GetReq   { string hex = 1; }
+message CreateReq { string tenant = 1; string owner = 2; string vcard = 3; }
+message UpdateReq { string hex = 1; string vcard = 2; string etag = 3; }
+message RemoveReq { string hex = 1; }
+message RemoveResp {}
+message SyncReq  { string tenant = 1; google.protobuf.Timestamp since = 2; }
+message SyncResp { repeated Contact changed = 1; repeated string removed = 2; }

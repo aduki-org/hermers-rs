@@ -1,0 +1,83 @@
+syntax = "proto3";
+package hermes.mail;
+
+import "google/protobuf/timestamp.proto";
+
+service MailService {
+  rpc ListMailboxes (ListMailboxesReq) returns (ListMailboxesResp);
+  rpc ListMessages  (ListMessagesReq)  returns (ListMessagesResp);
+  rpc GetMessage    (GetMessageReq)    returns (Message);
+  rpc Send          (SendReq)          returns (SendResp);
+  rpc Move          (MoveReq)          returns (MoveResp);
+  rpc SetFlags      (SetFlagsReq)      returns (SetFlagsResp);
+  rpc Expunge       (ExpungeReq)       returns (ExpungeResp);
+  rpc CreateMailbox (CreateMailboxReq) returns (Mailbox);
+  rpc DeleteMailbox (DeleteMailboxReq) returns (DeleteMailboxResp);
+  rpc UpdateMailbox (UpdateMailboxReq) returns (Mailbox);
+}
+
+enum Flag {
+  FLAG_SEEN     = 0;
+  FLAG_ANSWERED = 1;
+  FLAG_FLAGGED  = 2;
+  FLAG_DELETED  = 3;
+  FLAG_DRAFT    = 4;
+}
+
+message Mailbox {
+  string   hex         = 1;
+  string   tenant      = 2;
+  string   owner       = 3;
+  string   name        = 4;
+  uint32   uidnext     = 5;
+  uint32   uidvalidity = 6;
+  uint32   exists      = 7;
+  uint32   unseen      = 8;
+}
+
+message Message {
+  string   hex      = 1;
+  string   mailbox  = 2;
+  uint32   uid      = 3;
+  repeated Flag flags = 4;
+  string   subject  = 5;
+  string   from     = 6;
+  repeated string to = 7;
+  string   blob     = 8;
+  uint64   size     = 9;
+  google.protobuf.Timestamp date    = 10;
+  google.protobuf.Timestamp created = 11;
+}
+
+message ListMailboxesReq  { string tenant = 1; string owner = 2; }
+message ListMailboxesResp { repeated Mailbox items = 1; }
+message ListMessagesReq   { string mailbox = 1; string cursor = 2; uint32 limit = 3; }
+message ListMessagesResp  { repeated Message items = 1; string next = 2; }
+message GetMessageReq     { string hex = 1; }
+message SendReq { string tenant = 1; string from = 2; repeated string to = 3; bytes raw = 4; }
+message SendResp { string hex = 1; }
+message MoveReq  { string hex = 1; string dest = 2; }
+message MoveResp { string hex = 1; uint32 uid = 2; }
+message SetFlagsReq  { string hex = 1; repeated Flag add = 2; repeated Flag remove = 3; }
+message SetFlagsResp {}
+message ExpungeReq   { string mailbox = 1; repeated uint32 uids = 2; }
+message ExpungeResp  { repeated uint32 expunged = 1; }
+
+message CreateMailboxReq {
+  string tenant = 1;
+  string owner  = 2;
+  string name   = 3;
+  string role   = 4;
+}
+
+message DeleteMailboxReq {
+  string hex = 1;
+}
+
+message DeleteMailboxResp {}
+
+message UpdateMailboxReq {
+  string hex  = 1;
+  string name = 2;
+  string role = 3;
+}

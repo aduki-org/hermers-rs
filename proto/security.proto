@@ -1,0 +1,43 @@
+syntax = "proto3";
+package hermes.security;
+
+service SecurityService {
+  rpc Status (StatusReq) returns (StatusResp);
+}
+
+message StatusReq {}
+
+message MtastsEntry {
+  string domain           = 1;
+  string policy_json      = 2;
+  string expires          = 3;
+}
+
+message TlsaEntry {
+  string host             = 1;
+  int32  port             = 2;
+  string records_json     = 3;
+  string expires          = 4;
+}
+
+message BimiEntry {
+  string domain           = 1;
+  optional string location = 2;
+  optional string vmc     = 3;
+  string expires          = 4;
+}
+
+message ReportEntry {
+  string hex              = 1;
+  string kind             = 2;
+  string domain           = 3;
+  string period           = 4;
+  string received         = 5;
+}
+
+message StatusResp {
+  repeated MtastsEntry mtasts = 1;
+  repeated TlsaEntry   tlsa   = 2;
+  repeated BimiEntry   bimi   = 3;
+  repeated ReportEntry reports = 4;
+}
