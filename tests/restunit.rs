@@ -71,6 +71,12 @@ impl Backend for MockBackend {
             // Default OK empty page / hex ack
             let body = if req.url.contains("/tenant/keys") && req.method == "POST" {
                 br#"{"hex":"k1"}"#.to_vec()
+            } else if req.url.contains("/tenant/webhooks") && req.method == "POST" {
+                br#"{"hex":"W0X"}"#.to_vec()
+            } else if (req.method == "PATCH" || req.method == "DELETE")
+                && req.url.contains("/tenant/webhooks")
+            {
+                br#"{"ok":true}"#.to_vec()
             } else if req.method == "GET" {
                 br#"{"items":[],"total":0}"#.to_vec()
             } else {
@@ -209,3 +215,131 @@ async fn authorization_header_is_key_scheme() {
         Some("Key hm_live_secret")
     );
 }
+
+#[tokio::test]
+async fn create_webhook_posts_and_patches() {
+    let backend = Arc::new(MockBackend::new());
+    let bodies = Arc::clone(&backend.bodies);
+    let hermes = Hermes::with_backend(
+        "hm_live_admin",
+        Config {
+            api_base: Some("https://example.test/v1".into()),
+        },
+        backend,
+    )
+    .unwrap();
+    let created = hermes
+        .tenant
+        .create_webhook(&serde_json::json!({
+            "url": "https://hooks.example/h",
+            "secret": "whsec_0123456789abcdef",
+            "events": ["message.sent"],
+        }))
+        .await
+        .unwrap();
+    assert_eq!(created.hex, "W0X");
+    let body: serde_json::Value = serde_json::from_str(&bodies.lock().unwrap()[0]).unwrap();
+    assert_eq!(body["url"], "https://hooks.example/h");
+    hermes.tenant.active_webhooks(None).await.unwrap();
+    hermes
+        .tenant
+        .webhook_subscribers("message.sent", None)
+        .await
+        .unwrap();
+    hermes
+        .tenant
+        .update_webhook_active("W0X", false)
+        .await
+        .unwrap();
+    hermes
+        .tenant
+        .update_webhook_url("W0X", "https://hooks.example/v2")
+        .await
+        .unwrap();
+    hermes.tenant.delete_webhook("W0X").await.unwrap();
+}
+
+#[tokio::test]
+async fn covers_new_rest_surfaces() {
+    struct Capture {
+        urls: Arc<Mutex<Vec<(String, String)>>>,
+    }
+    impl Backend for Capture {
+        fn execute<'a>(
+            &'a self,
+            req: Request,
+        ) -> Pin<Box<dyn Future<Output = Result<Response, HermesError>> + Send + 'a>> {
+            Box::pin(async move {
+                if req.url.contains("/auth/whoami") {
+                    return Ok(Response {
+                        status: 200,
+                        status_text: "OK".into(),
+                        body: whoami_json(),
+                    });
+                }
+                self.urls
+                    .lock()
+                    .unwrap()
+                    .push((req.method.clone(), req.url.clone()));
+                let body = if req.url.contains("/feeds/") && req.url.ends_with("/sync") {
+                    br#"{"hex":"F0X","ok":true}"#.to_vec()
+                } else if req.url.contains("/tenant/keys/lookup/prefix") {
+                    br#"{"hex":"K0X","name":"ci","prefix":"hm_live_abc","active":true,"created":"2026-01-01T00:00:00","tenant":{"hex":"T0X","name":"Acme"}}"#.to_vec()
+                } else if req.method == "GET" {
+                    br#"{"items":[],"total":0}"#.to_vec()
+                } else {
+                    br#"{"ok":true}"#.to_vec()
+                };
+                Ok(Response {
+                    status: 200,
+                    status_text: "OK".into(),
+                    body,
+                })
+            })
+        }
+    }
+    let urls = Arc::new(Mutex::new(Vec::new()));
+    let hermes = Hermes::with_backend(
+        "hm_live_admin",
+        Config {
+            api_base: Some("https://example.test/v1".into()),
+        },
+        Arc::new(Capture {
+            urls: Arc::clone(&urls),
+        }),
+    )
+    .unwrap();
+    hermes.user.active_sessions(None).await.unwrap();
+    hermes.user.sessions_by_method("key", None).await.unwrap();
+    hermes.tenant.audits(None).await.unwrap();
+    hermes.tenant.promote().await.unwrap();
+    hermes.tenant.active_domains(None).await.unwrap();
+    hermes
+        .feeds
+        .sync("F0X")
+        .await
+        .unwrap();
+    hermes
+        .mail
+        .folder_unread("INBOX", None)
+        .await
+        .unwrap();
+    hermes.keys.list_expired().await.unwrap();
+    hermes.keys.lookup_prefix("hm_live_abc").await.unwrap();
+    hermes
+        .scheduling
+        .active_appointments(None)
+        .await
+        .unwrap();
+
+    let got = urls.lock().unwrap().clone();
+    assert!(got.iter().any(|(m, u)| m == "GET" && u.ends_with("/user/sessions") && !u.contains("/active")));
+    assert!(got.iter().any(|(_, u)| u.ends_with("/user/sessions/method/key")));
+    assert!(got.iter().any(|(_, u)| u.ends_with("/tenant/audits")));
+    assert!(got.iter().any(|(m, u)| m == "POST" && u.ends_with("/tenant/promote")));
+    assert!(got.iter().any(|(_, u)| u.ends_with("/user/feeds/F0X/sync")));
+    assert!(got.iter().any(|(_, u)| u.ends_with("/user/mail/folder/INBOX/unread")));
+    assert!(got.iter().any(|(_, u)| u.ends_with("/tenant/keys/expired")));
+    assert!(got.iter().any(|(m, u)| m == "POST" && u.ends_with("/tenant/keys/lookup/prefix")));
+}
+

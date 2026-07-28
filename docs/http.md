@@ -21,7 +21,13 @@ async fn main() -> Result<(), HermesError> {
     // Keys — raw secret returned once
     let created = hermes.keys.create("ci", &["contacts:read".into()], None, None, None).await?;
     // created.hex, created.key
-    let _ = (contacts.total, inbox.total, user.hex, created.hex, BASE_URL);
+
+    let hook = hermes.tenant.create_webhook(&serde_json::json!({
+        "url": "https://api.example.com/hooks",
+        "secret": "whsec_xxxxxxxxxxxxxxxx",
+        "events": ["message.sent"],
+    })).await?;
+    let _ = (contacts.total, inbox.total, user.hex, created.hex, hook.hex, BASE_URL);
     Ok(())
 }
 ```

@@ -550,7 +550,7 @@ pub struct ApiKey {
     pub scopes: Option<Json>,
 }
 
-/// Webhook list row.
+/// Webhook list row (`GET /tenant/webhooks`, `/active`, `/subscribers/{event}`).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Webhook {
     /// Hex.
@@ -568,34 +568,79 @@ pub struct Webhook {
     pub total: Option<i64>,
 }
 
-/// Webhook detail.
+/// Full webhook model (`GET /tenant/webhooks/{hex}`).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WebhookModel {
+    /// Numeric id.
+    pub id: i64,
+    /// Hex.
+    pub hex: String,
+    /// Tenant hex string (not nested).
+    pub tenant: String,
+    /// Callback URL.
+    pub url: String,
+    /// Signing secret.
+    pub secret: String,
+    /// Subscribed events (`null` holes allowed on wire).
+    pub events: Vec<Option<String>>,
+    /// Domain scope (`null` holes allowed on wire).
+    pub domains: Vec<Option<String>>,
+    /// Active.
+    pub active: bool,
+    /// Meta jsonb.
+    pub meta: Json,
+    /// Created.
+    pub created: String,
+    /// Updated.
+    pub updated: String,
+}
+
+/// Webhook detail view (`GET /tenant/webhooks/{hex}/detail` — no secret).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WebhookDetail {
     /// Hex.
     pub hex: String,
     /// URL.
     pub url: String,
+    /// Events jsonb.
+    pub events: Json,
     /// Active.
     pub active: bool,
     /// Created.
     pub created: String,
-    /// Tenant.
+    /// Nested tenant `{ hex, name }`.
     pub tenant: HexName,
-    /// Secret.
+}
+
+/// Tenant audit detail (`GET /tenant/view/audit/{hex}`).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AuditDetail {
+    /// Hex.
+    pub hex: String,
+    /// Action.
+    pub action: String,
+    /// Success.
+    pub success: bool,
+    /// Reason.
     #[serde(default)]
-    pub secret: Option<String>,
-    /// Events.
+    pub reason: Option<String>,
+    /// IP.
     #[serde(default)]
-    pub events: Option<Json>,
-    /// Domains.
+    pub ip: Option<String>,
+    /// Agent.
     #[serde(default)]
-    pub domains: Option<Json>,
+    pub agent: Option<String>,
+    /// Device.
+    #[serde(default)]
+    pub device: Option<Json>,
     /// Meta.
     #[serde(default)]
     pub meta: Option<Json>,
-    /// Total.
+    /// Created.
+    pub created: String,
+    /// Actor.
     #[serde(default)]
-    pub total: Option<i64>,
+    pub actor: Option<Json>,
 }
 
 /// Audit row.
@@ -975,6 +1020,15 @@ pub struct Event {
     /// Total.
     #[serde(default)]
     pub total: Option<i64>,
+}
+
+/// Manual feed sync result.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FeedSync {
+    /// Feed hex.
+    pub hex: String,
+    /// Whether sync succeeded.
+    pub ok: bool,
 }
 
 /// Feed model.

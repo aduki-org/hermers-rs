@@ -67,7 +67,22 @@ impl User {
     /// Active sessions.
     pub async fn active_sessions(&self, query: Option<Query>) -> Result<Page<Session>, HermesError> {
         let opts = query.as_ref().map(list_query);
-        self.http.get("/user/sessions/active", opts.as_ref()).await
+        self.http.get("/user/sessions", opts.as_ref()).await
+    }
+
+    /// Sessions filtered by auth method.
+    pub async fn sessions_by_method(
+        &self,
+        method: &str,
+        query: Option<Query>,
+    ) -> Result<Page<Session>, HermesError> {
+        let opts = query.as_ref().map(list_query);
+        self.http
+            .get(
+                &format!("/user/sessions/method/{method}"),
+                opts.as_ref(),
+            )
+            .await
     }
 
     /// Audits.
@@ -96,4 +111,48 @@ impl User {
             .patch(&format!("/user/preferences/{section}"), body, None)
             .await
     }
+    /// Audits by action.
+    pub async fn audits_by_action(
+        &self,
+        action: &str,
+        query: Option<Query>,
+    ) -> Result<Page<Audit>, HermesError> {
+        let opts = query.as_ref().map(list_query);
+        self.http
+            .get(
+                &format!("/user/audits/action/{action}"),
+                opts.as_ref(),
+            )
+            .await
+    }
+
+    /// Failed audits.
+    pub async fn failed_audits(&self, query: Option<Query>) -> Result<Page<Audit>, HermesError> {
+        let opts = query.as_ref().map(list_query);
+        self.http.get("/user/audits/failed", opts.as_ref()).await
+    }
+
+    /// Successful audits.
+    pub async fn successful_audits(
+        &self,
+        query: Option<Query>,
+    ) -> Result<Page<Audit>, HermesError> {
+        let opts = query.as_ref().map(list_query);
+        self.http
+            .get("/user/audits/successful", opts.as_ref())
+            .await
+    }
+
+    /// Audits by IP.
+    pub async fn audits_by_ip(
+        &self,
+        ip: &str,
+        query: Option<Query>,
+    ) -> Result<Page<Audit>, HermesError> {
+        let opts = query.as_ref().map(list_query);
+        self.http
+            .get(&format!("/user/audits/ip/{ip}"), opts.as_ref())
+            .await
+    }
+
 }

@@ -145,6 +145,25 @@ No `size` on list rows.
 | `rename_mailbox` | `PATCH /user/mailbox/{hex}/name` |
 | `remove_mailbox` | `DELETE /user/mailbox/{hex}` → `null` |
 
+
+## Folder & mailbox extras
+
+| SDK | HTTP | Returns |
+| --- | --- | --- |
+| `folder_unread(folder, query?)` | `GET /user/mail/folder/{folder}/unread` | `Page<Message>` |
+| `folder_flagged(folder, query?)` | `GET /user/mail/folder/{folder}/flagged` | `Page<Message>` |
+| `mailbox_messages(mailbox, query?)` | `GET /user/mailbox/messages/{mailbox}` | `Page<Mailbox>` |
+| `update_mailbox_role(hex, role)` | `PATCH /user/mailbox/{hex}/role` `{ role }` | `MailboxModel` |
+| `update_mailbox_uidnext(hex, uidnext)` | `PATCH …/{hex}/uidnext` `{ uidnext }` | `MailboxModel` |
+| `update_mailbox_flags(hex, flags)` | `PATCH …/{hex}/flags` `{ flags }` | `MailboxModel` |
+| `update_mailbox_subscribed(hex, subscribed)` | `PATCH …/{hex}/subscribed` `{ subscribed }` | `MailboxModel` |
+| `update_mailbox_parent(hex, parent)` | `PATCH …/{hex}/parent` `{ parent }` | `MailboxModel` |
+| `update_mailbox_quota(hex, quota)` | `PATCH …/{hex}/quota` `{ quota }` | `MailboxModel` |
+| `update_mailbox_acl(hex, acl)` | `PATCH …/{hex}/acl` `{ acl }` | `MailboxModel` |
+| `update_mailbox_meta(hex, meta)` | `PATCH …/{hex}/meta` `{ meta }` | `MailboxModel` |
+
+`mailbox_messages` returns mailbox list rows filtered by hex (server list shape).
+
 ## Errors
 
 `{ "error": "…", "message": "…" }` — see [Types](../../types/index.md).

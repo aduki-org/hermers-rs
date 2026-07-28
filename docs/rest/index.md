@@ -8,7 +8,7 @@ Field tables and JSON examples describe the **HTTP wire shapes** the API returns
 
 ```toml
 [dependencies]
-hermers = { version = "0.1", default-features = false, features = ["rest"] }
+hermers = { version = "0.2", default-features = false, features = ["rest"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 ```
 

@@ -4,7 +4,7 @@ use serde_json::{json, Value};
 
 use crate::rest::error::HermesError;
 use crate::rest::http::Client;
-use crate::rest::types::Feed;
+use crate::rest::types::{Feed, FeedSync};
 
 /// External calendar feeds.
 pub struct Feeds {
@@ -47,6 +47,20 @@ impl Feeds {
     /// Retrieve a feed.
     pub async fn retrieve(&self, hex: &str) -> Result<Feed, HermesError> {
         self.http.get(&format!("/user/feeds/{hex}"), None).await
+    }
+
+    /// Update a feed.
+    pub async fn update(&self, hex: &str, body: &Value) -> Result<Feed, HermesError> {
+        self.http
+            .patch(&format!("/user/feeds/{hex}"), body, None)
+            .await
+    }
+
+    /// Trigger an immediate sync.
+    pub async fn sync(&self, hex: &str) -> Result<FeedSync, HermesError> {
+        self.http
+            .post(&format!("/user/feeds/{hex}/sync"), &json!({}), None)
+            .await
     }
 
     /// Delete a feed.

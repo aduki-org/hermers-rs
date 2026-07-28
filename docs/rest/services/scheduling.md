@@ -141,6 +141,17 @@ This is **not** `{ day, start, end }`.
 | `notified` | datetime | yes |
 | `created` / `updated` | datetime | no |
 
+
+## Appointment extras
+
+| SDK | HTTP | Returns |
+| --- | --- | --- |
+| `active_appointments(query?)` | `GET /user/appointments/active` | `Page<Appointment>` |
+| `guests(hex)` | `GET /user/appointments/{hex}/guests` | `Vec<Guest>` |
+| `update_appointment_status(hex, status)` | `PATCH /user/appointments/{hex}/status` `{ status }` | `Appointment` |
+
+`status`: `confirmed`\|`canceled`\|`completed`\|`no_show`\|`pending`.
+
 ## Errors
 
 `{ "error": "…", "message": "…" }` — see [Types](../../types/index.md).

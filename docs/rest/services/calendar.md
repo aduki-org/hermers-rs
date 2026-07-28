@@ -50,6 +50,14 @@ Rust type: `CalendarCreated` with field `sync_token` (wire key `sync_token`).
 | `created` | datetime | no |
 | `total` | number | yes (list window) |
 
+
+## Update & delete
+
+| SDK | HTTP | Body / returns |
+| --- | --- | --- |
+| `update(hex, body)` | `PATCH /user/calendars/{hex}` | JSON → `CalendarCreated { hex, etag, sync_token }` |
+| `remove(hex)` | `DELETE /user/calendars/{hex}` | JSON value / empty |
+
 ## Errors
 
 `{ "error": "…", "message": "…" }` → `HermesError`. See [Types](../../types/index.md).

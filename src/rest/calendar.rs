@@ -52,6 +52,24 @@ impl Calendar {
         self.http.post("/user/calendars", &body, None).await
     }
 
+    /// Update a calendar.
+    pub async fn update(
+        &self,
+        hex: &str,
+        body: &serde_json::Value,
+    ) -> Result<CalendarCreated, HermesError> {
+        self.http
+            .patch(&format!("/user/calendars/{hex}"), body, None)
+            .await
+    }
+
+    /// Delete a calendar.
+    pub async fn remove(&self, hex: &str) -> Result<serde_json::Value, HermesError> {
+        self.http
+            .delete(&format!("/user/calendars/{hex}"), None)
+            .await
+    }
+
     /// Events across calendars.
     pub async fn events(&self, query: Option<Query>) -> Result<Page<Event>, HermesError> {
         let opts = query.as_ref().map(list_query);

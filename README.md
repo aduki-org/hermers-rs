@@ -13,14 +13,14 @@ The Hermers **server is private / proprietary**. This package is open source; it
 
 ```toml
 [dependencies]
-hermers = "0.1"
+hermers = "0.2"
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 ```
 
 REST only (smaller tree):
 
 ```toml
-hermers = { version = "0.1", default-features = false, features = ["rest"] }
+hermers = { version = "0.2", default-features = false, features = ["rest"] }
 ```
 
 ## Quickstart (REST)

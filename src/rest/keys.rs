@@ -34,6 +34,29 @@ impl Keys {
         self.http.get("/tenant/keys/active", None).await
     }
 
+    /// List expired tenant keys.
+    pub async fn list_expired(&self) -> Result<Page<ApiKey>, HermesError> {
+        self.http.get("/tenant/keys/expired", None).await
+    }
+
+    /// List keys for a user.
+    pub async fn list_by_user(&self, user: &str) -> Result<Page<ApiKey>, HermesError> {
+        self.http
+            .get(&format!("/tenant/keys/user/{user}"), None)
+            .await
+    }
+
+    /// Lookup by prefix.
+    pub async fn lookup_prefix(&self, prefix: &str) -> Result<ApiKey, HermesError> {
+        self.http
+            .post(
+                "/tenant/keys/lookup/prefix",
+                &json!({ "prefix": prefix }),
+                None,
+            )
+            .await
+    }
+
     /// Retrieve a key.
     pub async fn retrieve(&self, hex: &str) -> Result<ApiKey, HermesError> {
         self.http.get(&format!("/tenant/keys/{hex}"), None).await
@@ -76,6 +99,28 @@ impl Keys {
             .patch(
                 &format!("/tenant/keys/{hex}/name"),
                 &json!({ "name": name }),
+                None,
+            )
+            .await
+    }
+
+    /// Update key hash.
+    pub async fn update_hash(&self, hex: &str, hash: &str) -> Result<Value, HermesError> {
+        self.http
+            .patch(
+                &format!("/tenant/keys/{hex}/hash"),
+                &serde_json::json!({ "hash": hash }),
+                None,
+            )
+            .await
+    }
+
+    /// Update last-used timestamp.
+    pub async fn update_last(&self, hex: &str, last: &str) -> Result<Value, HermesError> {
+        self.http
+            .patch(
+                &format!("/tenant/keys/{hex}/last"),
+                &serde_json::json!({ "last": last }),
                 None,
             )
             .await

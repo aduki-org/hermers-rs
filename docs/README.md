@@ -11,14 +11,14 @@ Open-source Rust client for Hermers (**`hermers` crate**). The Hermers **server 
 
 ```toml
 [dependencies]
-hermers = "0.1"
+hermers = "0.2"
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 ```
 
 REST only:
 
 ```toml
-hermers = { version = "0.1", default-features = false, features = ["rest"] }
+hermers = { version = "0.2", default-features = false, features = ["rest"] }
 ```
 
 ## Quickstart

@@ -67,6 +67,19 @@ let feed = hermes.feeds.create(
 }
 ```
 
+
+## Update & sync
+
+| SDK | HTTP | Body / returns |
+| --- | --- | --- |
+| `update(hex, body)` | `PATCH /user/feeds/{hex}` | JSON object → `Feed` |
+| `sync(hex)` | `POST /user/feeds/{hex}/sync` | `FeedSync { hex, ok }` |
+
+```rust
+hermes.feeds.update("F0X…", &serde_json::json!({ "color": "#336699", "active": true })).await?;
+let synced = hermes.feeds.sync("F0X…").await?;
+```
+
 ## Errors
 
 `{ "error": "…", "message": "…" }` — see [Types](../../types/index.md).

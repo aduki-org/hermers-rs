@@ -95,6 +95,19 @@ let created = hermes.keys.create(
 
 Detail adds `scopes` (jsonb array/object as stored).
 
+
+## Key filters & patches
+
+| SDK | HTTP | Returns |
+| --- | --- | --- |
+| `list_expired()` | `GET /tenant/keys/expired` | `Page<ApiKey>` |
+| `list_by_user(user)` | `GET /tenant/keys/user/{user}` | `Page<ApiKey>` |
+| `lookup_prefix(prefix)` | `POST /tenant/keys/lookup/prefix` `{ prefix }` | `ApiKey` |
+| `update_hash(hex, hash)` | `PATCH /tenant/keys/{hex}/hash` `{ hash }` | `Ack` / value |
+| `update_last(hex, last)` | `PATCH /tenant/keys/{hex}/last` `{ last }` | `Ack` / value |
+
+`prefix` max 16 characters. `last` is a datetime string.
+
 ## Errors
 
 ```json

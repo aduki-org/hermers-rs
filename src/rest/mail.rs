@@ -135,6 +135,36 @@ impl Mail {
             .await
     }
 
+    /// Unread in folder.
+    pub async fn folder_unread(
+        &self,
+        folder: &str,
+        query: Option<Query>,
+    ) -> Result<Page<Message>, HermesError> {
+        let opts = query.as_ref().map(list_query);
+        self.http
+            .get(
+                &format!("/user/mail/folder/{folder}/unread"),
+                opts.as_ref(),
+            )
+            .await
+    }
+
+    /// Flagged in folder.
+    pub async fn folder_flagged(
+        &self,
+        folder: &str,
+        query: Option<Query>,
+    ) -> Result<Page<Message>, HermesError> {
+        let opts = query.as_ref().map(list_query);
+        self.http
+            .get(
+                &format!("/user/mail/folder/{folder}/flagged"),
+                opts.as_ref(),
+            )
+            .await
+    }
+
     /// Search.
     pub async fn search(&self, q: &str) -> Result<Page<Message>, HermesError> {
         self.http
@@ -264,4 +294,139 @@ impl Mail {
             .delete(&format!("/user/mailbox/{hex}"), None)
             .await
     }
+    /// Mailboxes filtered by hex.
+    pub async fn mailbox_messages(
+        &self,
+        mailbox: &str,
+        query: Option<Query>,
+    ) -> Result<Page<Mailbox>, HermesError> {
+        let opts = query.as_ref().map(list_query);
+        self.http
+            .get(
+                &format!("/user/mailbox/messages/{mailbox}"),
+                opts.as_ref(),
+            )
+            .await
+    }
+
+    /// Patch mailbox role.
+    pub async fn update_mailbox_role(
+        &self,
+        hex: &str,
+        role: &str,
+    ) -> Result<MailboxModel, HermesError> {
+        self.http
+            .patch(
+                &format!("/user/mailbox/{hex}/role"),
+                &json!({ "role": role }),
+                None,
+            )
+            .await
+    }
+
+    /// Patch uidnext.
+    pub async fn update_mailbox_uidnext(
+        &self,
+        hex: &str,
+        uidnext: i32,
+    ) -> Result<MailboxModel, HermesError> {
+        self.http
+            .patch(
+                &format!("/user/mailbox/{hex}/uidnext"),
+                &json!({ "uidnext": uidnext }),
+                None,
+            )
+            .await
+    }
+
+    /// Patch mailbox flags.
+    pub async fn update_mailbox_flags(
+        &self,
+        hex: &str,
+        flags: &[String],
+    ) -> Result<MailboxModel, HermesError> {
+        self.http
+            .patch(
+                &format!("/user/mailbox/{hex}/flags"),
+                &json!({ "flags": flags }),
+                None,
+            )
+            .await
+    }
+
+    /// Patch subscribed.
+    pub async fn update_mailbox_subscribed(
+        &self,
+        hex: &str,
+        subscribed: bool,
+    ) -> Result<MailboxModel, HermesError> {
+        self.http
+            .patch(
+                &format!("/user/mailbox/{hex}/subscribed"),
+                &json!({ "subscribed": subscribed }),
+                None,
+            )
+            .await
+    }
+
+    /// Patch parent.
+    pub async fn update_mailbox_parent(
+        &self,
+        hex: &str,
+        parent: &str,
+    ) -> Result<MailboxModel, HermesError> {
+        self.http
+            .patch(
+                &format!("/user/mailbox/{hex}/parent"),
+                &json!({ "parent": parent }),
+                None,
+            )
+            .await
+    }
+
+    /// Patch quota.
+    pub async fn update_mailbox_quota(
+        &self,
+        hex: &str,
+        quota: i32,
+    ) -> Result<MailboxModel, HermesError> {
+        self.http
+            .patch(
+                &format!("/user/mailbox/{hex}/quota"),
+                &json!({ "quota": quota }),
+                None,
+            )
+            .await
+    }
+
+    /// Patch ACL.
+    pub async fn update_mailbox_acl(
+        &self,
+        hex: &str,
+        acl: &Value,
+    ) -> Result<MailboxModel, HermesError> {
+        self.http
+            .patch(
+                &format!("/user/mailbox/{hex}/acl"),
+                &json!({ "acl": acl }),
+                None,
+            )
+            .await
+    }
+
+    /// Patch meta.
+    pub async fn update_mailbox_meta(
+        &self,
+        hex: &str,
+        meta: &Value,
+    ) -> Result<MailboxModel, HermesError> {
+        self.http
+            .patch(
+                &format!("/user/mailbox/{hex}/meta"),
+                &json!({ "meta": meta }),
+                None,
+            )
+            .await
+    }
+
 }

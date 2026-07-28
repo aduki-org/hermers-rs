@@ -75,10 +75,43 @@ impl Scheduling {
         self.http.get("/user/appointments", opts.as_ref()).await
     }
 
+    /// Active appointments.
+    pub async fn active_appointments(
+        &self,
+        query: Option<Query>,
+    ) -> Result<Page<Appointment>, HermesError> {
+        let opts = query.as_ref().map(list_query);
+        self.http
+            .get("/user/appointments/active", opts.as_ref())
+            .await
+    }
+
     /// Retrieve appointment.
     pub async fn retrieve_appointment(&self, hex: &str) -> Result<Appointment, HermesError> {
         self.http
             .get(&format!("/user/appointments/{hex}"), None)
+            .await
+    }
+
+    /// Guests for an appointment.
+    pub async fn guests(&self, hex: &str) -> Result<Vec<crate::rest::types::Guest>, HermesError> {
+        self.http
+            .get(&format!("/user/appointments/{hex}/guests"), None)
+            .await
+    }
+
+    /// Update appointment status.
+    pub async fn update_appointment_status(
+        &self,
+        hex: &str,
+        status: &str,
+    ) -> Result<Appointment, HermesError> {
+        self.http
+            .patch(
+                &format!("/user/appointments/{hex}/status"),
+                &json!({ "status": status }),
+                None,
+            )
             .await
     }
 
