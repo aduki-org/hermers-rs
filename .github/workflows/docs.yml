@@ -1,0 +1,75 @@
+name: Deploy Documentation to GitHub Pages
+
+# Publishes Hermers developer docs from this repo (aduki-org/hermers-rs) via mdBook.
+# Book root: book.toml + book/ (chapters assembled from docs/ + crate README).
+# Developer docs live under docs/rest/ and docs/grpc/ (not docs/sdk/).
+# HTML output: site/ → GitHub Pages.
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'docs/**'
+      - 'book/**'
+      - 'book.toml'
+      - 'README.md'
+      - 'Makefile'
+      - 'scripts/prepare-book.mjs'
+      - 'scripts/check-docs.mjs'
+      - 'scripts/docs-build.sh'
+      - 'scripts/docs-serve.sh'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup mdBook
+        uses: peaceiris/actions-mdbook@v2
+        with:
+          mdbook-version: '0.5.4'
+
+      - name: Verify mdBook
+        run: mdbook --version
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # prepare-book.mjs syncs docs/ + crate README into book/, then mdbook → site/
+      - name: Build documentation (mdBook)
+        run: make docs-build
+
+      - name: Check relative doc links
+        run: make docs-check
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

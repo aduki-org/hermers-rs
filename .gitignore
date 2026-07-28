@@ -6,11 +6,16 @@ rustc-ice-*.txt
 # Lockfile — library crate (bins/apps often commit; libs typically do not)
 Cargo.lock
 
-# Docs / site outputs (if generated locally)
+# Docs / site outputs
 site/
-book/book/
 /doc/
-/docs/book/
+
+# mdBook assembled chapters (copied from docs/ + crate README by docs-prepare).
+# Keep hand-authored book pages tracked.
+book/**
+!book/SUMMARY.md
+!book/whoami.md
+!book/getting-started.md
 
 # Coverage / profiling
 coverage/

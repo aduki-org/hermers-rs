@@ -68,7 +68,22 @@ cargo test
 
 ## Docs
 
-See [`docs/`](docs/README.md) — REST lives under `docs/rest/`, gRPC under `docs/grpc/`.
+Developer documentation lives under [`docs/`](docs/README.md) — REST in `docs/rest/`, gRPC in `docs/grpc/`.
+
+Documentation is published with **[mdBook](https://rust-lang.github.io/mdBook/)** (Rust-book UI).
+Book root is this package (`book.toml` + `book/`); chapters are assembled from `docs/` and
+the crate README into `book/`, then built to `site/` for GitHub Pages.
+
+Requires [`mdbook`](https://github.com/rust-lang/mdBook) on `PATH` (e.g. `cargo install mdbook`) and Node.js ≥18 for the prepare/check scripts.
+
+```bash
+make docs-prepare   # sync docs/ + crate README → book/
+make docs-build     # prepare + mdbook build → site/
+make docs-serve     # prepare + mdbook serve (http://localhost:3000)
+make docs           # build + link/forbidden-string check
+```
+
+Or: `./scripts/docs-build.sh` / `./scripts/docs-serve.sh`.
 
 ## License
 

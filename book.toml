@@ -1,0 +1,30 @@
+# Hermers developer docs (mdBook).
+#
+# Book root: sdks/rs/ (this directory) — same place as the crate and
+# GitHub Pages workflow. Source chapters live under book/ (assembled from
+# docs/ and the crate README by scripts/prepare-book.mjs). HTML output goes to
+# site/ for GitHub Pages.
+#
+# Build:  make docs-build   (or: ./scripts/docs-build.sh)
+# Serve:  make docs-serve   (or: ./scripts/docs-serve.sh)
+
+[book]
+title = "Hermers"
+description = "Rust SDK developer documentation for Hermes (REST + gRPC)"
+authors = ["Aduki"]
+language = "en"
+src = "book"
+
+[build]
+build-dir = "site"
+create-missing = false
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/aduki-org/hermers-rs"
+site-url = "/"
+no-section-label = false
+
+[output.html.search]
+enable = true
